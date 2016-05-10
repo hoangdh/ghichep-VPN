@@ -14,9 +14,6 @@
 
 ## 3. Các công nghệ và giao thức VPN
 
-- **IPSec**: Thực hiện bảo mật cho gói tin IP ở Layer 3 của mô hình OSI, có thể dùng cho site-to-site VPN hoặc remote-access VPN.
-- **MPLS**:  MPLS Layer 3 VPN mặc định không có mã hóa. Ta có thể sử dụng IPsec chung với MPLS VPN.
-
 ### Đường hầm (Tunneling) và mã hóa
 
 #### Tunneling
@@ -105,5 +102,3 @@
 
 - **Intranet-base**: Áp dụng cho công ty có nhiều chi nhánh ở xa muốn hợp nhất thành một mạng thống nhất.
 - **Extranet-base**: Các công ty muốn làm việc chung với đối tác, hay đồng nghiệp; họ có thể xây dựng một mạng extranet để kết nối LAN với LAN cho phép chia sẻ công việc hay tài nguyên dữ liệu với nhau.
-
-## Còn tiếp
