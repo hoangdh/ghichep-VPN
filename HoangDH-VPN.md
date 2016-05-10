@@ -89,8 +89,8 @@
 - Trong môi trường Remote Access L2TP cho phép khởi tạo đường hầm cho các frame và sử dụng giao thức PPP truyền dữ liệu trong đường hầm
 
 ### SSL
+
 - Secure Socket Layer thực hiện bảo mật cho TCP session tại Layer 4 của mô hình OSI, và có thể dùng cho remote-access VPN (cũng như dùng để truy cập an toàn một web server thông qua HTTPS).
-- 
 
 ## 4. Các loại VPN
 
