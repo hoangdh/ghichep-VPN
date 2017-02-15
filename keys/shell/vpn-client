@@ -1,0 +1,81 @@
+#! /bin/bash
+# Script to automate creating new OpenVPN clients
+# The client cert and key, along with the CA cert is
+# zipped up and placed somewhere to download securely
+#
+# H Cooper - 05/02/11
+#
+# Usage: new-openvpn-client.sh <common-name>
+mkdir -p /opt/client-vpn
+# Set where we're working from
+OPENVPN_RSA_DIR=/etc/openvpn/easy-rsa/
+OPENVPN_KEYS=$OPENVPN_RSA_DIR/keys
+KEY_DOWNLOAD_PATH=/opt/client-vpn/
+IP_VPN_SERVER=192.168.100.191
+# Either read the CN from $1 or prompt for it
+if [ -z "$1" ]
+	then echo -n "Enter new client common name (CN): "
+	read -e CN
+else
+	CN=$1
+fi
+
+# Ensure CN isn't blank
+if [ -z "$CN" ]
+	then echo "You must provide a CN."
+	exit
+fi
+
+# Check the CN doesn't already exist
+if [ -f $OPENVPN_KEYS/$CN.crt ]
+	then echo "Error: certificate with the CN $CN alread exists!"
+		echo "    $OPENVPN_KEYS/$CN.crt"
+	exit
+fi
+
+# Enter the easy-rsa directory and establish the default variables
+cd $OPENVPN_RSA_DIR
+source ./vars > /dev/null
+
+# Copied from build-key script (to ensure it works!)
+export EASY_RSA="${EASY_RSA:-.}"
+"$EASY_RSA/pkitool" --batch $CN
+
+# Create file OpenVPN
+cat > /etc/openvpn/easy-rsa/keys/$CN.ovpn << HOANG
+client
+dev tun
+proto udp
+remote $IP_VPN_SERVER 1194
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+# ca ca.crt
+# cert $CN.crt
+# key $CN.key
+remote-cert-tls server
+comp-lzo
+verb 3
+HOANG
+
+
+# Combine all into OVPN
+cd /etc/openvpn/easy-rsa/keys/
+CA=`cat ca.crt`
+KEY=`cat $CN.key`
+CERT=`cat $CN.crt`
+echo -e "<cert>\n$CERT\n</cert>\n<key>\n$KEY\n</key>\n<ca>\n$CA\n</ca>" >> $CN.ovpn
+
+
+cd /etc/openvpn/easy-rsa/keys/
+
+# Take the new cert and place it somewhere it can be downloaded securely
+#zip -p /opt/client-vpn/$CN-`date +%d%m%y`.zip $CN.crt $CN.key $CN.ovpn ca.crt
+zip -p /opt/client-vpn/$CN-`date +%d%m%y`.zip $CN.ovpn
+# Celebrate!
+echo ""
+echo "#############################################################"
+echo "COMPLETE! Download the new certificate here:"
+echo "$KEY_DOWNLOAD_PATH$CN-`date +%d%m%y`.zip"
+echo "#############################################################"
