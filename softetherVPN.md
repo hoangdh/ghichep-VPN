@@ -1,0 +1,96 @@
+## Hướng dẫn cài đặt SoftEther VPN trên CentOS 7
+
+- **Bước 1**: Cài đặt trình biên dịch GCC
+
+```
+yum update -y
+yum install -y gcc
+```
+
+- **Bước 1**: Tải SoftEtherVPN và giải nén
+
+Tải bản cài đặt mới nhất tại trang chủ
+
+```
+cd /opt
+wget https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/v4.28-9669-beta/softether-vpnserver-v4.28-9669-beta-2018.09.11-linux-x64-64bit.tar.gz
+tar -xvf softether-vpnserver-v4.28-9669-beta-2018.09.11-linux-x64-64bit.tar.gz 
+```
+
+- **Bước 2**: Biên dịch và cài đặt VPN
+
+```
+cd /opt/vpnserver/
+make 
+```
+
+⇒ Đồng ý với các điều khoản sử dụng.
+
+- **Bước 3**: Chuyển thư mục vào thư mục thực thi và phân lại quyền
+
+```
+cd /opt
+mv vpnserver /usr/local/
+cd /usr/local/vpnserver/
+chmod 600 *
+chmod 700 vpncmd
+chmod 700 vpnserver
+```
+
+- **Bước 4**: Tạo file khởi động cho SoftEther VPN
+
+> vi /etc/init.d/vpnserver
+
+```
+#!/bin/sh
+# chkconfig: 2345 99 01
+# description: SoftEther VPN Server
+DAEMON=/usr/local/vpnserver/vpnserver
+LOCK=/var/lock/subsys/vpnserver
+test -x $DAEMON || exit 0
+case "$1" in
+start)
+$DAEMON start
+touch $LOCK
+;;
+stop)
+$DAEMON stop
+rm $LOCK
+;;
+restart)
+$DAEMON stop
+sleep 3
+$DAEMON start
+;;
+*)
+echo "Usage: $0 {start|stop|restart}"
+exit 1
+esac
+exit 0
+```
+
+Phân quyền cho script
+
+> chmod 755 /etc/init.d/vpnserver
+
+Kích hoạt cho SoftEther khởi động cùng hệ thống
+
+> /sbin/chkconfig --add vpnserver
+
+Khởi động dịch vụ
+
+> /etc/init.d/vpnserver start
+
+- **Bước 6**: Mở các port cần thiết
+
+```
+firewall-cmd --permanent --add-port=5555/tcp
+firewall-cmd --permanent --add-port=1194/tcp
+firewall-cmd --permanent --add-port=1194/udp
+firewall-cmd --permanent --add-port=992/tcp
+firewall-cmd --permanent --add-port=443/tcp
+## For IPsec/L2TP
+firewall-cmd --permanent --add-port=500/udp
+firewall-cmd --permanent --add-port=4500/udp
+firewall-cmd --reload
+```
